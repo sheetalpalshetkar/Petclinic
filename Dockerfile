@@ -1,12 +1,12 @@
-#use openjdk 17 as the base image
-FROM openjdk:17-jdk-slim
+# Use OpenJDK 11 base image
+FROM openjdk:17-jre-slim
 
+# Set the working directory inside the container
+WORKDIR /usr/app
 
-# set working directory inside container
-WORKDIR /app
+# Copy the Spring Boot jar file into the container
+COPY target/pet-clinic-1.0.0.jar pet-clinic.jar
 
-#copy the compiled jar into container
-COPY target/pet-clinic-1.0.0.jar app.jar
-
-#commad to run the jar
-ENTRYPOINT ["java", "-jar","app.jar"]
+# Run the jar file
+ENTRYPOINT ["java", "-jar", "pet-clinic.jar"]
+	

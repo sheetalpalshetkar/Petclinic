@@ -7,9 +7,19 @@ pipeline {
     }
 
     stages {
+        stage('Verify Environment') {
+            steps {
+                echo 'Verifying Jenkins environment...'
+                sh 'whoami'
+                sh 'docker --version'
+                sh 'git --version'
+                sh 'java -version'
+                sh './mvnw -v || mvn -v'
+            }
+        }
+
         stage('Checkout') {
             steps {
-                // Replace with your actual GitHub repo and branch
                 git branch: 'main', url: 'https://github.com/sheetalpalshetkar/Petclinic.git'
             }
         }
@@ -17,6 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the Project with Maven compile'
+                sh 'chmod +x mvnw'
                 sh './mvnw clean compile'
             }
         }
@@ -37,18 +48,19 @@ pipeline {
 
         stage('Containerize') {
             steps {
-                echo 'Building Docker Image'
+                echo 'Cleaning up old Docker artifacts...'
+                sh 'docker rm -f ${CONTAINER_NAME} || true'
+                sh 'docker rmi -f ${IMAGE_NAME} || true'
+
+                echo 'Building Docker Image...'
                 sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying Docker Container'
-                // Stop existing container if any
-                sh "docker rm -f ${CONTAINER_NAME} || true"
-                // Start container
-                sh "docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}"
+                echo 'Deploying Docker Container...'
+                sh 'docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}'
             }
         }
     }

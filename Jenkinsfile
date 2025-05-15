@@ -13,8 +13,7 @@ pipeline {
                 sh 'whoami'
                 sh 'docker --version'
                 sh 'git --version'
-                sh 'java -version'
-                sh './mvnw -v || mvn -v'
+                sh 'java -version || true'
             }
         }
 
@@ -24,42 +23,20 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Building the Project with Maven compile'
-                sh 'chmod +x mvnw'
-                sh './mvnw clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Testing the Project with Maven test'
-                sh './mvnw test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                echo 'Packaging the Project with Maven package'
-                sh './mvnw package'
-            }
-        }
-
         stage('Containerize') {
             steps {
-                echo 'Cleaning up old Docker artifacts...'
+                echo 'Cleaning up old Docker container (if exists)...'
                 sh 'docker rm -f ${CONTAINER_NAME} || true'
                 sh 'docker rmi -f ${IMAGE_NAME} || true'
 
-                echo 'Building Docker Image...'
+                echo 'Building Docker Image using multi-stage Dockerfile...'
                 sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying Docker Container...'
+                echo 'Deploying Docker container...'
                 sh 'docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}'
             }
         }

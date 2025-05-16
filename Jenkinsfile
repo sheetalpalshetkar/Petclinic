@@ -23,21 +23,27 @@ pipeline {
             }
         }
 
-        stage('Containerize') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Cleaning up old Docker container (if exists)...'
-                sh 'docker rm -f ${CONTAINER_NAME} || true'
-                sh 'docker rmi -f ${IMAGE_NAME} || true'
-
-                echo 'Building Docker Image using multi-stage Dockerfile...'
+                echo 'Building Docker image from Dockerfile...'
                 sh 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy with Docker Compose') {
             steps {
-                echo 'Deploying Docker container...'
-                sh 'docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}'
+                echo 'Stopping previous containers and deploying...'
+                sh 'docker-compose down || true'
+                sh 'docker-compose up -d --build'
+
+                echo 'Waiting for MySQL to be ready...'
+                sh '''
+                for i in {1..10}; do
+                    nc -z mysql 3306 && echo "MySQL is up" && break
+                    echo "Waiting for MySQL..."
+                    sleep 5
+                done
+                '''
             }
         }
     }

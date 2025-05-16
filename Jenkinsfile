@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'pet-clinic-app'
-        CONTAINER_NAME = 'pet-clinic-container'
+        IMAGE_NAME = 'petclinic-app'
+        CONTAINER_NAME = 'petclinic'
     }
 
     stages {

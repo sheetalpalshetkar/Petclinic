@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: pet_clinic
+      MYSQL_ROOT_PASSWORD: Root123$
+    ports:
+      - "3306:3306"
+    networks:
+      - petnet
+
+  petclinic:
+    build: .
+    container_name: pet-clinic-container
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pet_clinic?useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Root123$
+    networks:
+      - petnet
+
+networks:
+  petnet:
